@@ -97,7 +97,7 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
 
 //******************************************************************/
 /// Search cids using the molecular formula
-pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
+pub fn search_formula(formula: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let url = PUG_REST.to_owned() + "compound/fastformula/" + formula + "/cids/JSON?MaxRecords=5";
 
     let res = reqwest::blocking::get(dbg!(url))?;
@@ -111,13 +111,14 @@ pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
         let parsed = json::parse(&txt)?;
 
         let cid_list = dbg!(&parsed["IdentifierList"]["CID"]);
+        let mut cids = Vec::new();
         for n_record in 0..5 {
-            println!("cid_list = {:?}", cid_list[n_record].to_string());
+            cids.push(cid_list[n_record].to_string());
         }
 
-        Ok("complete".to_string())
+        Ok(cids)
     } else {
-        Ok("NA".to_string())
+        Ok(vec![])
     }
 }
 
