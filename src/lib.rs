@@ -96,11 +96,12 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
 }
 
 //******************************************************************/
-/// Search cids using the molecular formula
+/// Search cids using the molecular formula.
+/// Return the *first five* cids.
 pub fn search_formula(formula: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let url = PUG_REST.to_owned() + "compound/fastformula/" + formula + "/cids/JSON?MaxRecords=5";
 
-    let res = reqwest::blocking::get(dbg!(url))?;
+    let res = reqwest::blocking::get(url)?;
 
     // Wait 200ms to avoid overloading the PubChem servers
     // 5 request per second TOP;
