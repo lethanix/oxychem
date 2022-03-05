@@ -111,7 +111,7 @@ pub fn search_formula(formula: &str) -> Result<Vec<String>, Box<dyn Error>> {
         let txt = res.text()?;
         let parsed = json::parse(&txt)?;
 
-        let cid_list = dbg!(&parsed["IdentifierList"]["CID"]);
+        let cid_list = &parsed["IdentifierList"]["CID"];
         let mut cids = Vec::new();
         for n_record in 0..5 {
             cids.push(cid_list[n_record].to_string());
