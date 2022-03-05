@@ -100,7 +100,7 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
 pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
     let url = PUG_REST.to_owned() + "compound/formula/" + formula + "/JSON?MaxRecords=5";
 
-    let res = reqwest::blocking::get(dbg!(url))?;
+    let res = reqwest::blocking::get(url)?;
 
     // Wait 200ms to avoid overloading the PubChem servers
     // 5 request per second TOP;
@@ -116,7 +116,7 @@ pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
 
         let url = PUG_REST.to_owned() + "compound/listkey/" + &list_key + "/cids/JSON";
 
-        let res = reqwest::blocking::get(url)?;
+        let res = reqwest::blocking::get(dbg!(url))?;
 
         // Wait 200ms to avoid overloading the PubChem servers
         // 5 request per second TOP;
