@@ -96,6 +96,7 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
 }
 
 //******************************************************************/
+/// Search cids using the molecular formula
 pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
     let url = PUG_REST.to_owned() + "compound/formula/" + formula + "/JSON?MaxRecords=5";
 
