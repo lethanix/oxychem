@@ -111,6 +111,7 @@ pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
         let parsed = json::parse(&txt)?;
 
         let cid_list = dbg!(&parsed["IdentifierList"]["CID"]);
+        println!("cid_list = {:?}", cid_list[0]);
 
         Ok("complete".to_string())
     } else {
