@@ -106,10 +106,12 @@ pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
     // 5 request per second TOP;
     thread::sleep(DELAY);
 
-    if let StatusCode::OK = res.status() {
-        let txt = res.text()?;
-        let parsed = json::parse(&txt)?;
+    let txt = res.text()?;
+    let parsed = json::parse(&txt)?;
 
+    let message = parsed["Waiting"]["Message"].to_string();
+
+    if String::from("Your request is running") == message {
         let list_key = parsed["Waiting"]["ListKey"].to_string();
 
         let url = PUG_REST.to_owned() + "compound/listkey/" + &list_key + "/cids/JSON";
