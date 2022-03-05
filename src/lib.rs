@@ -121,7 +121,7 @@ pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
         thread::sleep(DELAY);
 
         let cid_list = json::parse(&res.text()?)?;
-        println!("cid_list = {:?}", cid_list);
+        dbg!(cid_list);
 
         Ok("complete".to_string())
     } else {
