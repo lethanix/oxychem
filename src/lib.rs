@@ -113,7 +113,8 @@ pub fn search_formula(formula: &str) -> Result<Vec<String>, Box<dyn Error>> {
 
         let cid_list = &parsed["IdentifierList"]["CID"];
         let mut cids = Vec::new();
-        for n_record in 0..cid_list.len() {
+        // for n_record in 0..cid_list.len() {
+        for n_record in 0..15 {
             cids.push(cid_list[n_record].to_string());
         }
 
