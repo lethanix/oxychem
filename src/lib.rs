@@ -98,32 +98,19 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
 //******************************************************************/
 /// Search cids using the molecular formula
 pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
-    let url = PUG_REST.to_owned() + "compound/formula/" + formula + "/JSON?MaxRecords=5";
+    let url = PUG_REST.to_owned() + "compound/fastformula/" + formula + "/JSON?MaxRecords=5";
 
-    let res = reqwest::blocking::get(url)?;
+    let res = reqwest::blocking::get(dbg!(url))?;
 
     // Wait 200ms to avoid overloading the PubChem servers
     // 5 request per second TOP;
     thread::sleep(DELAY);
 
-    let txt = res.text()?;
-    let parsed = json::parse(&txt)?;
+    if let StatusCode::OK = res.status() {
+        let txt = res.text()?;
+        let parsed = json::parse(&txt)?;
 
-    let message = parsed["Waiting"]["Message"].to_string();
-
-    if String::from("Your request is running") == message {
-        let list_key = parsed["Waiting"]["ListKey"].to_string();
-
-        let url = PUG_REST.to_owned() + "compound/listkey/" + &list_key + "/cids/JSON";
-
-        let res = reqwest::blocking::get(dbg!(url))?;
-
-        // Wait 200ms to avoid overloading the PubChem servers
-        // 5 request per second TOP;
-        thread::sleep(DELAY);
-
-        let cid_list = json::parse(&res.text()?)?;
-        dbg!(cid_list);
+        let cid_list = dbg!(&parsed["IdentifierList"]["CID"]);
 
         Ok("complete".to_string())
     } else {
