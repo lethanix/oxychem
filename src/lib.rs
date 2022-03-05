@@ -6,12 +6,13 @@ use std::error::Error;
 use std::{thread, time};
 
 const DELAY: time::Duration = time::Duration::from_millis(200);
+const PUG_REST: &str = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/";
+const PUG_VIEW: &str = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/";
 
 //******************************************************************/
+/// Search for the compound and return the cid of the first result.
 pub fn get_cid(compound_name: String) -> Result<isize, Box<dyn Error>> {
-    let url: String = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/".to_string()
-        + &compound_name
-        + "/cids/JSON";
+    let url = PUG_REST.to_owned() + "compound/name/" + &compound_name + "/cids/JSON";
 
     let res = reqwest::blocking::get(url)?;
 
@@ -29,9 +30,8 @@ pub fn get_cid(compound_name: String) -> Result<isize, Box<dyn Error>> {
 
 //******************************************************************/
 pub fn get_cas(cid: isize) -> Result<String, Box<dyn Error>> {
-    let url: String = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/".to_string()
-        + &cid.to_string()
-        + "/JSON?heading=CAS";
+    let url: String =
+        PUG_VIEW.to_owned() + "data/compound/" + &cid.to_string() + "/JSON?heading=CAS";
 
     let res = reqwest::blocking::get(url)?;
 
@@ -53,8 +53,10 @@ pub fn get_cas(cid: isize) -> Result<String, Box<dyn Error>> {
 }
 
 //******************************************************************/
+/// Returns the InChIKey and Canonical Smiles of the compound.
 pub fn get_properties(cid: isize) -> Result<(String, String), Box<dyn Error>> {
-    let url: String = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/".to_string()
+    let url: String = PUG_REST.to_owned()
+        + "compound/cid/"
         + &cid.to_string()
         + "/property/InChIKey,CanonicalSMILES/JSON";
 
@@ -79,10 +81,10 @@ pub fn get_properties(cid: isize) -> Result<(String, String), Box<dyn Error>> {
 }
 
 //******************************************************************/
+/// Returns the SDF content of the compound.
 pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
-    let url: String = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/".to_string()
-        + &cid.to_string()
-        + "/SDF?record_type=2d";
+    let url: String =
+        PUG_REST.to_owned() + "compound/cid/" + &cid.to_string() + "/SDF?record_type=2d";
 
     let res = reqwest::blocking::get(url)?;
 
@@ -91,4 +93,48 @@ pub fn get_sdf(cid: isize) -> Result<String, Box<dyn Error>> {
     thread::sleep(DELAY);
 
     Ok(res.text()?)
+}
+
+//******************************************************************/
+pub fn search_formula(formula: &str) -> Result<String, Box<dyn Error>> {
+    let url = PUG_REST.to_owned() + "compound/formula/" + formula + "/JSON?MaxRecords=5";
+
+    let res = reqwest::blocking::get(url)?;
+
+    // Wait 200ms to avoid overloading the PubChem servers
+    // 5 request per second TOP;
+    thread::sleep(DELAY);
+
+    if let StatusCode::OK = res.status() {
+        let txt = res.text()?;
+        let parsed = json::parse(&txt)?;
+
+        let list_key = parsed["Waiting"]["ListKey"].to_string();
+
+        let url = PUG_REST.to_owned() + "compound/listkey/" + &list_key + "/cids/JSON";
+
+        let res = reqwest::blocking::get(url)?;
+
+        // Wait 200ms to avoid overloading the PubChem servers
+        // 5 request per second TOP;
+        thread::sleep(DELAY);
+
+        let cid_list = json::parse(&res.text()?)?;
+        println!("cid_list = {:?}", cid_list);
+
+        Ok("complete".to_string())
+    } else {
+        Ok("NA".to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_search_formula() {
+        let result = search_formula("C10H21N");
+        println!("result = {:?}", result);
+    }
 }
